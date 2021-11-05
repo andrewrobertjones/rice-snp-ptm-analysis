@@ -278,8 +278,8 @@ def one_locus_test():
 
 
 f = open("run_details.txt", "r")
-data_loc = f.readline()[:-1]
-output_loc = f.readline()[:-1]
+data_loc = f.readline().rstrip("\n")
+output_loc = f.readline().rstrip("\n")
 process_multiple_loci_threaded(data_loc,output_loc)
 
 
