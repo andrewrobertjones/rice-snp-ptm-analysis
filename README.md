@@ -16,16 +16,19 @@ The input file should have one RAP-DB or MSU transcript identifier per line, lik
 
 `
 Os05t0392300-02
+
 Os07t0694000-01
+
 Os01t0549400-01
+
 Os09t0103700-01
+
 Os01t0614500-01
+
 Os01t0588500-01
+
 LOC_Os08g05540.1
-Os08t0178300-01
-Os01t0971900-01
-LOC_Os07g30840.2
-Os06t0232000-01
+
 `
 
 The code is lazily multi-threaded, so it will try to start as many threads as there are rows in the input file. This needs improving, so it should only start up a sensible number of threads.
