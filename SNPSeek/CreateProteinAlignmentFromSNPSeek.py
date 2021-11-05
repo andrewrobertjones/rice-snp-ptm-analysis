@@ -277,7 +277,7 @@ def one_locus_test():
 #process_multiple_loci(data_loc,output_loc)
 
 
-f = open("run_details.txt","r")
+f = open("run_details.txt", "r")
 data_loc = f.readline()[:-1]
 output_loc = f.readline()[:-1]
 process_multiple_loci_threaded(data_loc,output_loc)
