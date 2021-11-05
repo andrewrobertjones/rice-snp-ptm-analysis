@@ -1,0 +1,2 @@
+D:/Dropbox/DocStore/ProteomicsSoftware/PTMExchange/Rice_build/Rice CSV files/Example_Rice_Modified_Proteins.txt
+D:/Dropbox/DocStore/ProteomicsSoftware/PTMExchange/Rice_build/Rice CSV files/out_saaps/
