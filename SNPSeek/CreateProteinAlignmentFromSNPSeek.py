@@ -194,7 +194,7 @@ def process_multiple_loci_threaded(file_of_loci,output_location):
     counter = 1
     transcript_list = []
     for line in loci_to_process_file:
-        line = line[:-1]
+        line = line.rstrip('\n')
         cells = line.split("\t")
         t_ID = cells[0]
         transcript_list.append(t_ID)
