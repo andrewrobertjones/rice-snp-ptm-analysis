@@ -65,8 +65,8 @@ def read_alignment(alignment_gz_file):
                 variety_name = description.split("_",1)[1].split("<")[0][:-1].split("[")[0]
 
             #Manual fix ("reference") also appears but can be safely ignored
-            if variety_name == "Reference":
-                variety_name = "NIPPONBARE::"
+            #if variety_name == "Reference":
+            #    variety_name = "NIPPONBARE::"
 
             var_to_original_var_name[variety_name] = alignment[i].description
             varieties.append(variety_name)
@@ -86,7 +86,8 @@ def read_variety_group_mapping(mapping_file):
         line = line[:-1]
         #print(line)
         cells = line.split("\t")
-        var_id = cells[0].split("[")[0] #PADI SIRANDAH KUNING::IRGC 73762-1::[IRIS 313-11904] take up to first [
+        #var_id = cells[0].split("[")[0] #PADI SIRANDAH KUNING::IRGC 73762-1::[IRIS 313-11904] take up to first [
+        var_id = cells[1]   #Simpler to get the ID only
         var_group = cells[3]
         variety_id_to_group[var_id] = var_group
 

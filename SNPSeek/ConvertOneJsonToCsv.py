@@ -43,23 +43,25 @@ def get_reference_bases(snp_dictionary):
 #The function will return a dictionary, where the keys are the variety names, the values of each dictionary entry is
 def get_variety_alleles(snp_dictionary):
     var_alleles = {} #Create a dictionary where the key is the variety name, and the value is a list of alleles for each position (of length num_positions)
+
     varieties = snp_dictionary["varname"]
     var_allele_list = snp_dictionary["varalleles"]
     for i in range(0,len(var_allele_list)):  # there is a list of lists, we will loop through the outer list, just grabbing the list of alleles for of the 3116 varieties
         alleles_for_one_variety = var_allele_list[i]
         variety = varieties[i]
-        #print("variety",variety)
 
         if variety != None:
             if "－" in variety:
                 variety = variety.replace("－","-")    #UTF encoding problem with this char in some names
 
+            #COLOMBIA XXI::G1::[IRIS 313-15908]
+            variety = variety.split("[")[1][:-1]
             var_alleles[variety] = alleles_for_one_variety ##++
         #print(variety,alleles_for_one_variety,end="\n")
     return var_alleles
 
 ## Converts json to separated text
-##2021 fixing bug where one variety name has a comma in it, so need tsv format
+##2021 fixing bug where one variety name has a comma in it, so need csv format
 def convert_json_text(locus_to_process):
     success= True
     f_error_log = open("error_log.txt","w")
@@ -68,10 +70,10 @@ def convert_json_text(locus_to_process):
         os.makedirs(outfolder)
 
     filename = IN_FOLDER + locus_to_process + ".json"
-    print("Converting:",filename ," to tsv")
+    print("Converting:",filename ," to csv")
     with open(filename, "r") as json_file:
 
-        outfile = outfolder + "/" + locus_to_process + ".tsv"
+        outfile = outfolder + "/" + locus_to_process + ".csv"
         snp_dictionary = json.load(json_file)
 
         chromosome = get_chromosome(snp_dictionary)
@@ -113,7 +115,7 @@ def convert_json_text(locus_to_process):
                     snp_array[row_variety+2,col_snp+1] = variety_allele
 
             json_file.close()
-            np.savetxt(outfile,snp_array,delimiter="\t",fmt='%s')
+            np.savetxt(outfile,snp_array,delimiter=",",fmt='%s')
         else:
             print("No data for locus:",locus_to_process)
             success=False

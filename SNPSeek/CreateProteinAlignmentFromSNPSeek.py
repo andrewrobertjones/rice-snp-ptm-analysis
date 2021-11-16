@@ -14,6 +14,7 @@ from threading import Thread
 
 PATH_TO_DATABASE_FOLDER = "../../RiceDatabases/"
 
+
 def process_one_variety(snp_string,short_chr,trans_id,offset,gff_file):
     #snp_string_values = "27501530:G;27501902:T;27501903:C;27501931:T;27501941:G;27501942:A;27501966:G;27501975:T;27501977:T;27501994:C;27502082:A;27502103:C;27502128:A;27502182:A;27502289:G;27502324:C;27502379:G;27502388:T;27502420:C;27502598:C;27502627:A;27502647:G;27502886:T;27502940:T;27503019:T;27503025:A;27503028:G;27503049:T;27503125:A;27503210:A;27503309:C;27503381:A;27503424:T;27503450:G;27503457:A;27503519:C;27503544:C;27503565:T;27503580:T;27503585:A;27503619:G;27503624:C;27503668:A;27503703:T;27503712:A;27503755:A;27503762:G;27503779:T;27503811:G;27503829:A;27503833:G;27503871:A;27503914:G;27503962:T;27503965:T;27503977:A;27503984:T;27503987:A;27504011:C;27504021:A;27504027:G;27504030:A;27504038:G;27504045:C;27504096:T;27504210:A;27504216:G;27504251:C;27504290:A;27504307:C;27504421:A;27504431:C;27504440:T;27504443:A;27504464:G;27504567:G;27504639:T;27504649:G;27504663:G;27504683:T;27504715:A;27504716:G;27504769:G;27504772:T;27504775:C;27504779:T;27504784:T;27504830:C;27504883:A;27504896:G;27504899:G;27504903:T;27504904:G;27504907:A;27504940:G;27504942:T;27504966:A;27504982:C;27505010:T;27505029:C;27505050:C;27505064:A;27505089:C;27505112:T;27505130:A;27505150:A;27505268:T;27505304:A;27505394:G;27505399:T;27505442:A;27505445:C;27505614:T;27505618:G;27505682:C;27505724:C;27505776:T;27505787:A;27505892:A;27506062:T;27506286:G;27506486:C;27506575:A;27506578:G;27506779:G;27506792:A;27506796:C;27506798:G;27506802:G"
 
@@ -74,7 +75,7 @@ def get_data_from_snpseek(transcript_ID):
     else:
         return(False)
 
-def create_alignment(locus,transcript_id,chr_num,output_location):
+def create_alignment(locus,transcript_id,chr_num,output_location,is_local_csv_files):
     print("\tAbout to create alignment for",transcript_id)
     chr_file_stub = PATH_TO_DATABASE_FOLDER + "ChromosomeSplit/Oryza_sativa.IRGSP-1.0.dna.toplevel.fa"
     chr_file_name = chr_file_stub + chr_num + ".fasta"  # Assumes already run / cached the chromosome splitter
@@ -94,9 +95,14 @@ def create_alignment(locus,transcript_id,chr_num,output_location):
                                    coding_start)
 
     reference_record = SeqRecord(ref_protein, id=transcript_id + "_reference")
-    input_text = PATH_TO_DATABASE_FOLDER + "temp_csv_files/" + locus + ".tsv"
 
-    var_to_snp_dict = get_variety_to_snps_dictionary(input_text)
+
+    if is_local_csv_files:
+        input_text = PATH_TO_DATABASE_FOLDER + "msu-Chr1-3kFilt/genes-MSU-filtered-3K/" + locus + "/" + locus+".csv"
+        var_to_snp_dict = get_variety_to_snps_dictionary(input_text)
+    else:
+        input_text = PATH_TO_DATABASE_FOLDER + "temp_csv_files/" + locus + ".csv"
+        var_to_snp_dict = get_variety_to_snps_dictionary(input_text)
 
     if not os.path.exists(output_location):
         os.makedirs(output_location)
@@ -162,7 +168,7 @@ def create_alignment(locus,transcript_id,chr_num,output_location):
 #Testing changing first ATG to CTG
 #snp_string =  "27507024:G;27501530:G;27501902:T;27501903:C;27501931:T;27501941:G;27501942:A;27501966:G;27501975:T;27501977:T;27501994:C;27502082:A;27502103:C;27502128:A;27502182:A;27502289:G;27502324:C;27502379:G;27502388:T;27502420:C;27502598:C;27502627:A;27502647:G;27502886:T;27502940:T;27503019:T;27503025:A;27503028:G;27503049:T;27503125:A;27503210:A;27503309:C;27503381:A;27503424:T;27503450:G;27503457:A;27503519:C;27503544:C;27503565:T;27503580:T;27503585:A;27503619:G;27503624:C;27503668:A;27503703:T;27503712:A;27503755:A;27503762:G;27503779:T;27503811:G;27503829:A;27503833:G;27503871:A;27503914:G;27503962:T;27503965:T;27503977:A;27503984:T;27503987:A;27504011:C;27504021:A;27504027:G;27504030:A;27504038:G;27504045:C;27504096:T;27504210:A;27504216:G;27504251:C;27504290:A;27504307:C;27504421:A;27504431:C;27504440:T;27504443:A;27504464:G;27504567:G;27504639:T;27504649:G;27504663:G;27504683:T;27504715:A;27504716:G;27504769:G;27504772:T;27504775:C;27504779:T;27504784:T;27504830:C;27504883:A;27504896:G;27504899:G;27504903:T;27504904:G;27504907:A;27504940:G;27504942:T;27504966:A;27504982:C;27505010:T;27505029:C;27505050:C;27505064:A;27505089:C;27505112:T;27505130:A;27505150:A;27505268:T;27505304:A;27505394:G;27505399:T;27505442:A;27505445:C;27505614:T;27505618:G;27505682:C;27505724:C;27505776:T;27505787:A;27505892:A;27506062:T;27506286:G;27506486:C;27506575:A;27506578:G;27506779:G;27506792:A;27506796:C;27506798:G;27506802:G"
 
-def process_multiple_loci(file_of_loci,output_location):
+def process_multiple_loci(file_of_loci,output_location,do_get_from_snpseek):
 
     loci_to_process_file =  open(file_of_loci,"r")
 
@@ -177,7 +183,14 @@ def process_multiple_loci(file_of_loci,output_location):
             #MSU example LOC_Os08g05540.1
             temp_transcript_ID = t_ID.replace("LOC_","")
             chromosome = str(int(temp_transcript_ID[2:4])) #get chromosomal position, convert to int then back to string to remove trailing zeroes
-            returned_data = get_data_from_snpseek(t_ID)
+
+
+            if do_get_from_snpseek:
+                returned_data = get_data_from_snpseek(t_ID)
+            else:
+                print("Complete code for reading local csv instead")
+
+
             if returned_data: #False if failed
                 locus = returned_data[0]
                 transcript_id = returned_data[1]
@@ -244,15 +257,17 @@ def process_one_transcript(transcript_ID,out_folder):
         if returned_data:  # False if failed
             locus = returned_data[0]
             transcript_id = returned_data[1]
-            main_msa_fasta_gz = create_alignment(locus, transcript_id, chromosome, out_folder)
+            do_local_run = False
+            main_msa_fasta_gz = create_alignment(locus, transcript_id, chromosome, out_folder,do_local_run)
             create_MSA_pos_stats(main_msa_fasta_gz, out_folder)
     else:
         print("transcript not recognised, will not be processed (only RAP-DB and MSU IDs supporteD)", transcript_ID)
 
 def one_locus_test():
     #t_ID = "LOC_Os01g48060.1"
-    t_ID = "Os01g0625300.1"
-    t_ID = "LOC_Os05g45410.1"
+    #t_ID = "Os01g0625300.1"
+    #t_ID = "LOC_Os05g45410.1"
+    t_ID = "LOC_Os01g01100.1"
     #t_ID = "LOC_Os02g35140.1"
     #t_ID = "LOC_Os04g43910.1"
     #chr = "4"
@@ -260,12 +275,22 @@ def one_locus_test():
     #t_ID = "LOC_Os12g41380.1"   #SUMO protease
     chr = "5"
 
-    get_data_from_snpseek(t_ID,chr)
+    get_data_from_snpseek(t_ID)
+    returned_data = get_data_from_snpseek(t_ID)
+    temp_transcript_ID = t_ID.replace("LOC_", "")
+    chromosome = str(int(temp_transcript_ID[
+                         2:4]))  # get chromosomal position, convert to int then back to string to remove trailing zeroes
+
+    output_location = "D:/Dropbox/DocStore/ProteomicsSoftware/PTMExchange/Rice_build/Rice CSV files/out_saaps/"
+    if returned_data:  # False if failed
+        locus = returned_data[0]
+        transcript_id = returned_data[1]
+        main_msa_fasta_gz = create_alignment(locus, transcript_id, chromosome, output_location,False)
+        create_MSA_pos_stats(main_msa_fasta_gz, output_location)
     #transcript_ID = "LOC_Os06g09660.1"
     #chr_num = "6"
 
 
-#one_locus_test()
 #process_multiple_loci("ProcessHSF_Xinyang_project_output.txt")
 #process_multiple_loci("ProcessARFs.txt")
 

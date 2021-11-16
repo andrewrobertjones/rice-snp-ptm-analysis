@@ -37,4 +37,4 @@ def retrieve_json(locusname):
 
     return [locusname,success]
 
-retrieve_json("Os01g0625300.1")
+#retrieve_json("Os01g0625300.1")
