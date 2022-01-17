@@ -2,3 +2,5 @@
 2. Add error handling for particular genes with lots of missing SNPs, that the gene might be absent altogether, put these into a separate bucket
 3. Loss of splice sites "Additionally,  all  exon  boundaries  required  canonical  splice  sites (e.g. GT-AG, GC-AG, AT-AC) [25-29]." https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1769492/pdf/1471-2164-7-327.pdf
 4. Note in the file that substitutes SNPs on chromosomes, that it slices the same chromosome 1000s of times, very inefficient, to check if this was never fixed
+5. Work out canonical MSU form and just process that, unless peptide is mapped to multiple?
+6. Implement a simple method of limiting the number of transcripts to get in total, by calling CreateProteinAlignmentFromSNPSeek from elsewhere or fix

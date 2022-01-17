@@ -190,6 +190,7 @@ def run_multi(transcript_list,output_location,do_local_run):
 
         total_transcripts = len(transcript_list)
 
+        #TODO have a counter, with an inner loop. The next set of threads won't kick off until join is hit?
         for n in range(0, total_transcripts):
             transcript_ID = transcript_list[n]
             print("Starting thread",str(n+1), "for transcript",transcript_ID)
