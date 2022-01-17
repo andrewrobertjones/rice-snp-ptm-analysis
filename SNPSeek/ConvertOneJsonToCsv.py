@@ -104,10 +104,13 @@ def convert_json_text(locus_to_process):
 
                 variety = varieties[row_variety]
                 variety_allele_list = variety_alleles[variety]
+
+                if variety[0:5] == "IRIS ": #New downloads from SNP_seek have an underscore rather than a space, so matching here
+                    variety = "IRIS_" + variety[5:]
                 snp_array[row_variety + 2, 0] = variety
 
                 for col_snp in range(0,len(snp_positions)):
-                    snp_pos = snp_positions[col_snp]
+                    snp_pos = str(chromosome) + "_" + str(snp_positions[col_snp])
 
                     if row_variety == 0:
                         snp_array[0, col_snp+1] = snp_pos  #fill header row, first two positions taken

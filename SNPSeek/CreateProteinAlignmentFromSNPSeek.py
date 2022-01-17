@@ -13,10 +13,11 @@ import os, shutil, gzip
 from threading import Thread
 
 PATH_TO_DATABASE_FOLDER = "../../RiceDatabases/"
+PATH_TO_SNP_FOLDER = "../../RiceDatabases/Genes-3K-Base-CSV-20211130T093248Z-001/Genes-3K-Base-CSV/"
 
 
 def process_one_variety(snp_string,short_chr,trans_id,offset,gff_file):
-    #snp_string_values = "27501530:G;27501902:T;27501903:C;27501931:T;27501941:G;27501942:A;27501966:G;27501975:T;27501977:T;27501994:C;27502082:A;27502103:C;27502128:A;27502182:A;27502289:G;27502324:C;27502379:G;27502388:T;27502420:C;27502598:C;27502627:A;27502647:G;27502886:T;27502940:T;27503019:T;27503025:A;27503028:G;27503049:T;27503125:A;27503210:A;27503309:C;27503381:A;27503424:T;27503450:G;27503457:A;27503519:C;27503544:C;27503565:T;27503580:T;27503585:A;27503619:G;27503624:C;27503668:A;27503703:T;27503712:A;27503755:A;27503762:G;27503779:T;27503811:G;27503829:A;27503833:G;27503871:A;27503914:G;27503962:T;27503965:T;27503977:A;27503984:T;27503987:A;27504011:C;27504021:A;27504027:G;27504030:A;27504038:G;27504045:C;27504096:T;27504210:A;27504216:G;27504251:C;27504290:A;27504307:C;27504421:A;27504431:C;27504440:T;27504443:A;27504464:G;27504567:G;27504639:T;27504649:G;27504663:G;27504683:T;27504715:A;27504716:G;27504769:G;27504772:T;27504775:C;27504779:T;27504784:T;27504830:C;27504883:A;27504896:G;27504899:G;27504903:T;27504904:G;27504907:A;27504940:G;27504942:T;27504966:A;27504982:C;27505010:T;27505029:C;27505050:C;27505064:A;27505089:C;27505112:T;27505130:A;27505150:A;27505268:T;27505304:A;27505394:G;27505399:T;27505442:A;27505445:C;27505614:T;27505618:G;27505682:C;27505724:C;27505776:T;27505787:A;27505892:A;27506062:T;27506286:G;27506486:C;27506575:A;27506578:G;27506779:G;27506792:A;27506796:C;27506798:G;27506802:G"
+    #snp_string_values = "8_2968783:G;8_2968844:C;8_2969033:C',
 
     # transcript = make_transcript_seq("../Databases/cached_gff_chunks/"+gff3,chr,transscript_ID)
     # print (transcript)
@@ -29,6 +30,7 @@ def process_one_variety(snp_string,short_chr,trans_id,offset,gff_file):
     #sub_seq = sequence.seq
     #print("seq", sub_seq[27502003:27502068])
     #substituted_protein = make_protein_seq("../../Databases/cached_gff_chunks/" + gff_file, changed_sequence, trans_id,offset)
+    #TODO - different csv format for local run compared to downloaded
     substituted_protein = make_protein_seq(PATH_TO_DATABASE_FOLDER + "cached_gff_chunks/" + gff_file, changed_sequence, trans_id,offset)
     #print(protein2)
     return substituted_protein
@@ -77,6 +79,7 @@ def get_data_from_snpseek(transcript_ID):
 
 def create_alignment(locus,transcript_id,chr_num,output_location,is_local_csv_files):
     print("\tAbout to create alignment for",transcript_id)
+    out_gz = None
     chr_file_stub = PATH_TO_DATABASE_FOLDER + "ChromosomeSplit/Oryza_sativa.IRGSP-1.0.dna.toplevel.fa"
     chr_file_name = chr_file_stub + chr_num + ".fasta"  # Assumes already run / cached the chromosome splitter
     records = list(SeqIO.parse(chr_file_name, "fasta"))
@@ -98,109 +101,71 @@ def create_alignment(locus,transcript_id,chr_num,output_location,is_local_csv_fi
 
 
     if is_local_csv_files:
-        input_text = PATH_TO_DATABASE_FOLDER + "msu-Chr1-3kFilt/genes-MSU-filtered-3K/" + locus + "/" + locus+".csv"
+        #input_text = PATH_TO_DATABASE_FOLDER + "msu-Chr1-3kFilt/genes-MSU-filtered-3K/" + locus + "/" + locus+".csv"
+
+        input_text = PATH_TO_SNP_FOLDER + "MSUgene-Base3K-chr"+chr_num+"/"+chr_num+"/"+ locus + "/" + transcript_id + ".csv"
         var_to_snp_dict = get_variety_to_snps_dictionary(input_text)
     else:
         input_text = PATH_TO_DATABASE_FOLDER + "temp_csv_files/" + locus + ".csv"
         var_to_snp_dict = get_variety_to_snps_dictionary(input_text)
 
-    if not os.path.exists(output_location):
-        os.makedirs(output_location)
-    output_fasta = output_location + transcript_id + "_proteins_in_varieties.fasta"
-    output_fasta_diffs = output_location + transcript_id + "_different_proteins_in_varieties.fasta"
+    if len(var_to_snp_dict) > 1:    #Correctly processed, otherwise empty
+        if not os.path.exists(output_location):
+            os.makedirs(output_location)
+        output_fasta = output_location + transcript_id + "_proteins_in_varieties.fasta"
+        output_fasta_diffs = output_location + transcript_id + "_different_proteins_in_varieties.fasta"
 
-    out_records = []
-    out_records.append(reference_record)
+        out_records = []
+        out_records.append(reference_record)
 
-    out_diff_records = []
-    out_diff_records.append(reference_record)
+        out_diff_records = []
+        out_diff_records.append(reference_record)
 
-    counter = 1
-    for variety in var_to_snp_dict:
-        snps = var_to_snp_dict[variety]
-        # print(variety," ->" ,snps )
-        if counter < 5:
-            variety_protein = process_one_variety(snps, short_chromosome, transcript_id, coding_start, gff3)
-            # variety_protein = process_one_variety(snps, chr, transcript_ID, 0, gff3)
-            variety_record = SeqRecord(variety_protein, id=transcript_id + "_" + variety)
-            out_records.append(variety_record)
-            if str(variety_protein) != str(reference_record.seq):
-                out_diff_records.append(variety_record)
-            # else:
-            # print("match",variety,"and reference")
-        # counter += 1   #Uncomment for testing
+        counter = 1
 
-    out_gz = output_fasta + ".gz"
-    #gzf = gzip.open(out_gz, "wb")
+        cached_snps_prot = {}   #Only create new protein sequence if SNPs have changed
 
-    with gzip.open(out_gz, "wt") as fout:
-        SeqIO.write(sequences=out_records, handle=fout, format="fasta")
+        for variety in var_to_snp_dict:
+            snps = var_to_snp_dict[variety]
+            # print(variety," ->" ,snps )
+            if counter < 5:
 
-    out_gz2 = output_fasta_diffs + ".gz"    #records just showing which are different
-    with gzip.open(out_gz2, "wt") as fout2:
-        SeqIO.write(sequences=out_diff_records, handle=fout2, format="fasta")
+                if snps not in cached_snps_prot:
+                    variety_protein = process_one_variety(snps, short_chromosome, transcript_id, coding_start, gff3)
+                    cached_snps_prot[snps] = variety_protein
+                else:
+                    variety_protein = cached_snps_prot[snps]
 
-    #out_records.close()
-    #SeqIO.write(out_diff_records, output_fasta_diffs, "fasta")
+                # variety_protein = process_one_variety(snps, chr, transcript_ID, 0, gff3)
+                variety_record = SeqRecord(variety_protein, id=transcript_id + "_" + variety)
+                out_records.append(variety_record)
+                if str(variety_protein) != str(reference_record.seq):
+                    out_diff_records.append(variety_record)
+                # else:
+                # print("match",variety,"and reference")
+            # counter += 1   #Uncomment for testing
 
-    #out_gz = output_fasta + ".gz"
-    #with open(output_fasta, "rb") as fin, gzip.open(out_gz, "wb") as fout:
-    #    # Reads the file by chunks to avoid exhausting memory
-    #    shutil.copyfileobj(fin, fout)
-    #fin.close()
-    #fout.close()
+        out_gz = output_fasta + ".gz"
+        #gzf = gzip.open(out_gz, "wb")
 
-    #in_data = open(output_fasta , "rb").read()
-    #out_gz = output_fasta + ".gz"
-    #gzf = gzip.open(out_gz, "wb")
-    #gzf.write(in_data)
-    #gzf.close()
-    #os.unlink(output_fasta) #remove unzipped version
+        with gzip.open(out_gz, "wt") as fout:
+            SeqIO.write(sequences=out_records, handle=fout, format="fasta")
 
-    # If you want to delete the original file after the gzip is done:
-    #os.unlink(in_file)
-
+        out_gz2 = output_fasta_diffs + ".gz"    #records just showing which are different
+        with gzip.open(out_gz2, "wt") as fout2:
+            SeqIO.write(sequences=out_diff_records, handle=fout2, format="fasta")
+    else:
+        print("\tFile not processed")
 
     return out_gz
 
 #snp_string = read_csv_convert_to_string("temp_csv_files/LOC_Os01g48060.csv","COLOMBIA")
 
-#Testing changing first ATG to CTG
-#snp_string =  "27507024:G;27501530:G;27501902:T;27501903:C;27501931:T;27501941:G;27501942:A;27501966:G;27501975:T;27501977:T;27501994:C;27502082:A;27502103:C;27502128:A;27502182:A;27502289:G;27502324:C;27502379:G;27502388:T;27502420:C;27502598:C;27502627:A;27502647:G;27502886:T;27502940:T;27503019:T;27503025:A;27503028:G;27503049:T;27503125:A;27503210:A;27503309:C;27503381:A;27503424:T;27503450:G;27503457:A;27503519:C;27503544:C;27503565:T;27503580:T;27503585:A;27503619:G;27503624:C;27503668:A;27503703:T;27503712:A;27503755:A;27503762:G;27503779:T;27503811:G;27503829:A;27503833:G;27503871:A;27503914:G;27503962:T;27503965:T;27503977:A;27503984:T;27503987:A;27504011:C;27504021:A;27504027:G;27504030:A;27504038:G;27504045:C;27504096:T;27504210:A;27504216:G;27504251:C;27504290:A;27504307:C;27504421:A;27504431:C;27504440:T;27504443:A;27504464:G;27504567:G;27504639:T;27504649:G;27504663:G;27504683:T;27504715:A;27504716:G;27504769:G;27504772:T;27504775:C;27504779:T;27504784:T;27504830:C;27504883:A;27504896:G;27504899:G;27504903:T;27504904:G;27504907:A;27504940:G;27504942:T;27504966:A;27504982:C;27505010:T;27505029:C;27505050:C;27505064:A;27505089:C;27505112:T;27505130:A;27505150:A;27505268:T;27505304:A;27505394:G;27505399:T;27505442:A;27505445:C;27505614:T;27505618:G;27505682:C;27505724:C;27505776:T;27505787:A;27505892:A;27506062:T;27506286:G;27506486:C;27506575:A;27506578:G;27506779:G;27506792:A;27506796:C;27506798:G;27506802:G"
-
-def process_multiple_loci(file_of_loci,output_location,do_get_from_snpseek):
-
-    loci_to_process_file =  open(file_of_loci,"r")
-
-    counter = 1
-    for line in loci_to_process_file:
-        line = line[:-1]
-        cells = line.split("\t")
-        t_ID = cells[0]
-
-        if "Os" in t_ID:
-            #RAP example Os01t0588500-01
-            #MSU example LOC_Os08g05540.1
-            temp_transcript_ID = t_ID.replace("LOC_","")
-            chromosome = str(int(temp_transcript_ID[2:4])) #get chromosomal position, convert to int then back to string to remove trailing zeroes
-
-
-            if do_get_from_snpseek:
-                returned_data = get_data_from_snpseek(t_ID)
-            else:
-                print("Complete code for reading local csv instead")
-
-
-            if returned_data: #False if failed
-                locus = returned_data[0]
-                transcript_id = returned_data[1]
-                main_msa_fasta_gz = create_alignment(locus,transcript_id,chromosome,output_location)
-                create_MSA_pos_stats(main_msa_fasta_gz,output_location)
-
-        else:
-            print("transcript not recognised, will not be processed (only RAP-DB and MSU IDs supporteD)",t_ID)
-
-def process_multiple_loci_threaded(file_of_loci,output_location):
+#Arguments are:
+# 1) input file of transcript IDs to process,
+# 2) location for output to be written;
+# 3) Boolean of whether to do a local run when true, (files already in a local file store) or query SNP-Seq for Json download (false)
+def process_multiple_loci_threaded(file_of_loci,output_location,do_local_run):
 
     loci_to_process_file =  open(file_of_loci,"r")
 
@@ -212,9 +177,13 @@ def process_multiple_loci_threaded(file_of_loci,output_location):
         t_ID = cells[0]
         transcript_list.append(t_ID)
 
-    run_multi(transcript_list,output_location)
+    run_multi(transcript_list,output_location,do_local_run)
 
-def run_multi(transcript_list,output_location):
+#Arguments are:
+# 1) input file of transcript IDs to process,
+# 2) location for output to be written;
+# 3) Boolean of whether to do a local run when true, (files already in a local file store) or query SNP-Seq for Json download (false)
+def run_multi(transcript_list,output_location,do_local_run):
     try:
 
         threads = []
@@ -224,7 +193,7 @@ def run_multi(transcript_list,output_location):
         for n in range(0, total_transcripts):
             transcript_ID = transcript_list[n]
             print("Starting thread",str(n+1), "for transcript",transcript_ID)
-            t = Thread(target=process_one_transcript, args=(transcript_ID,output_location))
+            t = Thread(target=process_one_transcript, args=(transcript_ID,output_location,do_local_run))
             threads.append(t)
             t.start()
 
@@ -243,8 +212,11 @@ def run_multi(transcript_list,output_location):
         print("Error starting thread")
 
 
-
-def process_one_transcript(transcript_ID,out_folder):
+#Arguments are:
+# 1) input file of transcript IDs to process,
+# 2) location for output to be written;
+# 3) Boolean of whether to do a local run when true, (files already in a local file store) or query SNP-Seq for Json download (false)
+def process_one_transcript(transcript_ID,out_folder,do_local_run):
 
     if "Os" in transcript_ID:
         # RAP example Os01t0588500-01
@@ -253,15 +225,18 @@ def process_one_transcript(transcript_ID,out_folder):
         chromosome = str(int(temp_transcript_ID[
                              2:4]))  # get chromosomal position, convert to int then back to string to remove trailing zeroes
 
-        returned_data = get_data_from_snpseek(transcript_ID)
-        if returned_data:  # False if failed
-            locus = returned_data[0]
-            transcript_id = returned_data[1]
-            do_local_run = False
-            main_msa_fasta_gz = create_alignment(locus, transcript_id, chromosome, out_folder,do_local_run)
+        locus_ID = transcript_ID
+        if transcript_ID.find("."):  # Need to remove suffix for SNP-SEEK   #TODO does this work for RAP-DB transcript IDs?
+            locus_ID = transcript_ID[:transcript_ID.find(".")]
+
+        if do_local_run == False:
+            returned_data = get_data_from_snpseek(transcript_ID)
+
+        main_msa_fasta_gz = create_alignment(locus_ID, transcript_ID, chromosome, out_folder,do_local_run)
+        if main_msa_fasta_gz != None:   #Error handling for case that csv is not present
             create_MSA_pos_stats(main_msa_fasta_gz, out_folder)
     else:
-        print("transcript not recognised, will not be processed (only RAP-DB and MSU IDs supporteD)", transcript_ID)
+        print("transcript not recognised, will not be processed (only RAP-DB and MSU IDs supported)", transcript_ID)
 
 def one_locus_test():
     #t_ID = "LOC_Os01g48060.1"
@@ -305,6 +280,7 @@ def one_locus_test():
 f = open("run_details.txt", "r")
 data_loc = f.readline().rstrip("\n")
 output_loc = f.readline().rstrip("\n")
-process_multiple_loci_threaded(data_loc,output_loc)
+do_local_run = True
+process_multiple_loci_threaded(data_loc,output_loc,do_local_run)
 
 

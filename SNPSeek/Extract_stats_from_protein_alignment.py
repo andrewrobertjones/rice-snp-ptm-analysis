@@ -6,7 +6,7 @@ from Bio import AlignIO
 import os
 import os, shutil, gzip
 
-VAR_MAPPING_FILE = "3k_pop_details_UTF-8_v2.tsv"
+VAR_MAPPING_FILE = "3k_pop_details_UTF-8_v3.tsv"
 
 
 
@@ -59,10 +59,16 @@ def read_alignment(alignment_gz_file):
             #LOC_Os01g70270.1_QB_604::[CX210] <unknown description>
             #Os05t0392300-02_NIAO YAO::IRGC 5496-1::[IRIS 313-8743] <unknown description>
             description = alignment[i].description
-            if description[0:3] == "LOC":   #MSU
-                variety_name = description.split("_",2)[2].split("<")[0][:-1].split("[")[0]    #grab LUBANG PUTI::IRGC 5429-1::
+            #if description[0:3] == "LOC":   #MSU
+            #    variety_name = description.split("_",2)[2].split("<")[0][:-1].split("[")[0]    #grab LUBANG PUTI::IRGC 5429-1::
+            #else:
+            #    variety_name = description.split("_",1)[1].split("<")[0][:-1].split("[")[0]
+
+            if description[0:3] == "LOC":  # MSU
+                variety_name = description.split("_",2)[2].split(" ")[0]
             else:
-                variety_name = description.split("_",1)[1].split("<")[0][:-1].split("[")[0]
+                variety_name = description.split("_")[1].split(" ")[0]
+
 
             #Manual fix ("reference") also appears but can be safely ignored
             #if variety_name == "Reference":
@@ -115,9 +121,8 @@ def count_groups_per_sub(aa_subs,var_to_group,out_file):
                     count = count + 1
                     vargroup_to_count[group] = count  # increment counters
                 else:
-                    if variety != "reference": #Safely ignore
+                    if variety != "reference" and variety != "Reference": #Safely ignore
                         print("variety not found",variety,"original name:",var_to_original_var_name[variety])
-
 
 
             for vargroup in vargroup_to_count:

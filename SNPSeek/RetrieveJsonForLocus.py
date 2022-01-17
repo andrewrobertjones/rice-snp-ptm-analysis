@@ -9,7 +9,7 @@ def retrieve_json(locusname):
 
     success = True
 
-    if locusname.find("."):  # Need to remove suffix for SNP-SEEK
+    if locusname.find("."):  # Need to remove suffix for SNP-SEEK   #TODO does this work for RAP-DB transcript IDs?
         locusname = locusname[:locusname.find(".")]
 
     folder_name = PATH_TO_DATABASE_FOLDER + 'cached_json_files'

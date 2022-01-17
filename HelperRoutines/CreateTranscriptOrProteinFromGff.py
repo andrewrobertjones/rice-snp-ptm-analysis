@@ -197,7 +197,9 @@ def substitute_snps_on_chromosome(chr,snp_list,offset):
     for pos_and_base in temp_snp_list:
         temp = pos_and_base.split(":")
         try:
-            pos = int(temp[0])
+            #changed 17/1 to cope with changed format from SNP-Seek download, position is prefixed with chromosome number
+            #pos = int(temp[0])
+            pos = int(temp[0].split("_")[1])
             base = temp[1]
 
             if base != "A" and base != "G" and base != "T" and base != "C":
