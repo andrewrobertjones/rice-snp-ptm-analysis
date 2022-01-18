@@ -14,7 +14,9 @@ for line in f:
     cells = line.split("\t")
     locus_ID = cells[2]
     is_canonical = cells[8]
-    locus_to_is_canonical[locus_ID] = is_canonical
+    if is_canonical == "Y":
+        locus_to_is_canonical[locus_ID] = is_canonical
+
 
 f.close()
 
