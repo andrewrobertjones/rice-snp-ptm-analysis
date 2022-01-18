@@ -78,7 +78,7 @@ def get_data_from_snpseek(transcript_ID):
         return(False)
 
 def create_alignment(locus,transcript_id,chr_num,output_location,is_local_csv_files):
-    print("\tAbout to create alignment for",transcript_id)
+    #print("\tAbout to create alignment for",transcript_id)
     out_gz = None
     chr_file_stub = PATH_TO_DATABASE_FOLDER + "ChromosomeSplit/Oryza_sativa.IRGSP-1.0.dna.toplevel.fa"
     chr_file_name = chr_file_stub + chr_num + ".fasta"  # Assumes already run / cached the chromosome splitter
@@ -154,8 +154,8 @@ def create_alignment(locus,transcript_id,chr_num,output_location,is_local_csv_fi
         out_gz2 = output_fasta_diffs + ".gz"    #records just showing which are different
         with gzip.open(out_gz2, "wt") as fout2:
             SeqIO.write(sequences=out_diff_records, handle=fout2, format="fasta")
-    else:
-        print("\tFile not processed")
+    #else:
+        #print("\tFile not processed")
 
     return out_gz
 
@@ -185,21 +185,21 @@ def process_multiple_loci_threaded(file_of_loci,output_location,do_local_run):
 # 3) Boolean of whether to do a local run when true, (files already in a local file store) or query SNP-Seq for Json download (false)
 def run_multi(transcript_list,output_location,do_local_run):
     try:
-
         threads = []
-
         total_transcripts = len(transcript_list)
 
-        #TODO have a counter, with an inner loop. The next set of threads won't kick off until join is hit?
-        for n in range(0, total_transcripts):
-            transcript_ID = transcript_list[n]
-            print("Starting thread",str(n+1), "for transcript",transcript_ID)
-            t = Thread(target=process_one_transcript, args=(transcript_ID,output_location,do_local_run))
-            threads.append(t)
-            t.start()
+        for i in range(0, total_transcripts,10):
+            print("i:",i)
+            for n in range(i, i+10):
+                transcript_ID = transcript_list[n]
+                print("Starting thread",str(n+1), "for transcript",transcript_ID)
+                t = Thread(target=process_one_transcript, args=(transcript_ID,output_location,do_local_run))
+                threads.append(t)
+                t.start()
 
-        for t in threads:
-            t.join()
+            for t in threads:
+                t.join()
+
 
 
         #thread_counter = 0
